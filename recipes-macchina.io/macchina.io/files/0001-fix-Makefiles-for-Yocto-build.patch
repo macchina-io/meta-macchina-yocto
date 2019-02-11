@@ -1,0 +1,82 @@
+From e685cb45f2dde7ac870efa38b3f2f9bae122aec9 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?G=C3=BCnter=20Obiltschnig?= <guenter.obiltschnig@appinf.com>
+Date: Mon, 19 Nov 2018 16:34:21 +0100
+Subject: [PATCH] fix Makefiles for Yocto build
+
+---
+ platform/OSP/BundleCreator/BundleCreator.make | 2 ++
+ platform/OSP/BundleCreator/Makefile           | 2 +-
+ platform/OSP/CodeCacheUtility/Makefile        | 2 +-
+ platform/OSP/StripBundle/Makefile             | 2 +-
+ platform/PageCompiler/PageCompiler.make       | 2 ++
+ 5 files changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/platform/OSP/BundleCreator/BundleCreator.make b/platform/OSP/BundleCreator/BundleCreator.make
+index f6dab6d5..f6a6684f 100644
+--- a/platform/OSP/BundleCreator/BundleCreator.make
++++ b/platform/OSP/BundleCreator/BundleCreator.make
+@@ -8,8 +8,10 @@
+ # a Makefile.
+ #
+ 
++ifndef BUNDLE_TOOL
+ ifneq (,$(findstring debug,$(DEFAULT_TARGET) $(MAKECMDGOALS)))
+ BUNDLE_TOOL = $(POCO_BASE)/OSP/BundleCreator/$(POCO_HOST_BINDIR)/bundled
+ else
+ BUNDLE_TOOL = $(POCO_BASE)/OSP/BundleCreator/$(POCO_HOST_BINDIR)/bundle
+ endif
++endif
+diff --git a/platform/OSP/BundleCreator/Makefile b/platform/OSP/BundleCreator/Makefile
+index 81382eca..c4426bd4 100644
+--- a/platform/OSP/BundleCreator/Makefile
++++ b/platform/OSP/BundleCreator/Makefile
+@@ -10,6 +10,6 @@ objects = BundleCreator ManifestInfo
+ 
+ target         = bundle
+ target_version = 1
+-target_libs    = PocoFoundation PocoXML PocoUtil PocoOSP PocoZip $(POCO_LICENSING)
++target_libs    = PocoFoundation PocoJSON PocoXML PocoUtil PocoOSP PocoZip $(POCO_LICENSING)
+ 
+ include $(POCO_BASE)/build/rules/exec
+diff --git a/platform/OSP/CodeCacheUtility/Makefile b/platform/OSP/CodeCacheUtility/Makefile
+index bbb0b21f..57d57644 100644
+--- a/platform/OSP/CodeCacheUtility/Makefile
++++ b/platform/OSP/CodeCacheUtility/Makefile
+@@ -10,6 +10,6 @@ objects = CCUtility
+ 
+ target         = ccutil
+ target_version = 1
+-target_libs    = PocoOSP PocoZip PocoUtil PocoXML PocoFoundation
++target_libs    = PocoOSP PocoZip PocoUtil PocoXML PocoJSON PocoFoundation
+ 
+ include $(POCO_BASE)/build/rules/exec
+diff --git a/platform/OSP/StripBundle/Makefile b/platform/OSP/StripBundle/Makefile
+index f6d8f527..a3776f66 100644
+--- a/platform/OSP/StripBundle/Makefile
++++ b/platform/OSP/StripBundle/Makefile
+@@ -10,6 +10,6 @@ objects = StripBundle
+ 
+ target         = strip-bundle
+ target_version = 1
+-target_libs    = PocoZip PocoUtil PocoXML PocoFoundation
++target_libs    = PocoZip PocoUtil PocoXML PocoJSON PocoFoundation
+ 
+ include $(POCO_BASE)/build/rules/exec
+diff --git a/platform/PageCompiler/PageCompiler.make b/platform/PageCompiler/PageCompiler.make
+index a109b320..a227c256 100644
+--- a/platform/PageCompiler/PageCompiler.make
++++ b/platform/PageCompiler/PageCompiler.make
+@@ -8,6 +8,7 @@
+ # a Makefile.
+ #
+ 
++ifndef PAGE_COMPILER
+ ifneq (,$(findstring debug,$(DEFAULT_TARGET) $(MAKECMDGOALS)))
+ ifneq (,$(findstring static,$(DEFAULT_TARGET) $(MAKECMDGOALS)))
+ PAGE_COMPILER = $(POCO_BASE)/PageCompiler/$(POCO_HOST_BINDIR)/static/cpspcd
+@@ -21,3 +22,4 @@ else
+ PAGE_COMPILER = $(POCO_BASE)/PageCompiler/$(POCO_HOST_BINDIR)/cpspc
+ endif
+ endif
++endif
+\ No newline at end of file

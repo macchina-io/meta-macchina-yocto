@@ -1,0 +1,3 @@
+#!/bin/sh
+mkdir -p /var/cache/codeCache
+LD_LIBRARY_PATH="/opt/macchina/lib:/var/cache/codeCache" /opt/macchina/bin/macchina --config /opt/macchina/etc/macchina.properties

@@ -1,0 +1,30 @@
+From b1bfedaded16967c85506577a4ac21efaaf748cb Mon Sep 17 00:00:00 2001
+From: Pascal Bach <pascal.bach@siemens.com>
+Date: Wed, 21 Nov 2018 11:16:49 +0100
+Subject: [PATCH] fix HAVE_MEMMOVE define
+
+---
+ platform/XML/src/expat_config.h | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/platform/XML/src/expat_config.h b/platform/XML/src/expat_config.h
+index 78904d1e..c5e71fd6 100644
+--- a/platform/XML/src/expat_config.h
++++ b/platform/XML/src/expat_config.h
+@@ -13,7 +13,6 @@
+ #ifndef EXPAT_CONFIG_H
+ #define EXPAT_CONFIG_H
+ 
+-
+ #include "Poco/Platform.h"
+ 
+ 
+@@ -33,7 +32,7 @@
+ #endif
+ 
+ 
+-#define HAVE_MEMMOVE
++#define HAVE_MEMMOVE 1
+ 
+ 
+ #endif /* EXPAT_CONFIG_H */

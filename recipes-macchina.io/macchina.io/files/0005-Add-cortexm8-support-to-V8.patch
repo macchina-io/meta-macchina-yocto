@@ -1,0 +1,25 @@
+From 1c839072e84a961fafe15ba2c37767015dcddaee Mon Sep 17 00:00:00 2001
+From: Pascal Bach <pascal.bach@siemens.com>
+Date: Thu, 22 Nov 2018 16:47:00 +0100
+Subject: [PATCH] Add cortexm8 support to V8
+
+---
+ platform/JS/V8/Makefile | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/platform/JS/V8/Makefile b/platform/JS/V8/Makefile
+index ea09e920..50c144be 100644
+--- a/platform/JS/V8/Makefile
++++ b/platform/JS/V8/Makefile
+@@ -46,6 +46,11 @@ endif
+ ifeq ($(OSARCH),mips)
+ V8ARCH = mips
+ endif
++#cortexa8-vfp
++ifeq ($(findstring cortexa8,$(OSARCH)),cortexa8)
++V8ARCH = arm
++GYPFLAGS += -Darm_version=7 -Darm_fpu=default -Darm_float_abi=default -Darm_thumb=0 -Darm_test_noprobe=on
++endif
+ 
+ ifeq ($(POCO_HOST_OSARCH),x86_64)
+ V8HOSTARCH = x64

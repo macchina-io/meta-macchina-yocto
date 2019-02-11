@@ -1,0 +1,155 @@
+From 1fa7cc3228163ab20f7af1c85cc8594e0aa3be16 Mon Sep 17 00:00:00 2001
+From: Pascal Bach <pascal.bach@siemens.com>
+Date: Wed, 21 Nov 2018 11:16:37 +0100
+Subject: [PATCH] allow external Poco build
+
+---
+ Makefile                    |  9 ++++++-
+ platform/Makefile           | 62 +++++++++++++++++++++++++++++++++++++++++----
+ platform/build/rules/global |  8 +++---
+ 3 files changed, 69 insertions(+), 10 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 3bfef28a..af9431c9 100644
+--- a/Makefile
++++ b/Makefile
+@@ -10,7 +10,10 @@ PRODUCT ?= sdk
+ DESTDIR ?= /usr/local/macchina
+ INSTALLDIR ?= $(DESTDIR)
+ 
+-RUNTIME_LIBS = PocoFoundation PocoXML PocoJSON PocoUtil PocoZip PocoOSP PocoRemotingNG PocoGeo
++ifndef POCO_EXTERNAL
++RUNTIME_LIBS = PocoFoundation PocoXML PocoJSON PocoUtil PocoZip
++endif
++RUNTIME_LIBS += PocoOSP PocoRemotingNG PocoGeo
+ 
+ MACCHINA_BASE = $(shell pwd)
+ POCO_BASE = $(MACCHINA_BASE)/platform
+@@ -20,6 +23,10 @@ export MACCHINA_BASE
+ export POCO_BASE
+ export PROJECT_BASE
+ 
++ifdef POCO_EXTERNAL
++export POCO_EXTERNAL
++endif
++
+ ifeq ($(PRODUCT),sdk)
+ INSTALL_TARGET = install_sdk
+ else ifeq ($(PRODUCT),runtime)
+diff --git a/platform/Makefile b/platform/Makefile
+index fd994aeb..134b1f1b 100644
+--- a/platform/Makefile
++++ b/platform/Makefile
+@@ -22,7 +22,10 @@ poco: libexecs $(if $(TESTS),tests) $(if $(SAMPLES),samples)
+ all: libexecs tests samples
+ 
+ INSTALLDIR = $(DESTDIR)$(POCO_PREFIX)
+-COMPONENTS = Foundation XML JSON Util Net Data Data/SQLite Zip Crypto NetSSL_OpenSSL CppParser CodeGeneration JS/V8 JS/Core JS/Data JS/Bridge JS/Net RemotingNG RemotingNG/RemoteGen RemotingNG/TCP OSP OSP/BundleCreator OSP/CodeCacheUtility OSP/StripBundle OSP/Web OSP/Core OSP/Crypto OSP/Data OSP/Data/SQLite OSP/Net OSP/NetSSL_OpenSSL OSP/SecureWebServer OSP/WebServer OSP/JS OSP/JS/Net OSP/JS/Data OSP/JS/Web OSP/JS/Scheduler
++ifndef POCO_EXTERNAL
++COMPONENTS = Foundation XML JSON Util Net Data Data/SQLite Zip Crypto NetSSL_OpenSSL
++endif
++COMPONENTS += CppParser CodeGeneration JS/V8 JS/Core JS/Data JS/Bridge JS/Net RemotingNG RemotingNG/RemoteGen RemotingNG/TCP OSP OSP/BundleCreator OSP/CodeCacheUtility OSP/StripBundle OSP/Web OSP/Core OSP/Crypto OSP/Data OSP/Data/SQLite OSP/Net OSP/NetSSL_OpenSSL OSP/SecureWebServer OSP/WebServer OSP/JS OSP/JS/Net OSP/JS/Data OSP/JS/Web OSP/JS/Scheduler
+ 
+ cppunit:
+ 	$(MAKE) -C $(POCO_BASE)/CppUnit
+@@ -46,10 +49,17 @@ install: libexecs
+ 	find $(POCO_BUILD)/lib -name "libPoco*" -type l -exec cp -Rf {} $(INSTALLDIR)/lib \;
+ 
+ # POCO C++ Libraries
+-libexecs = Foundation-libexec XML-libexec JSON-libexec Util-libexec Net-libexec Crypto-libexec NetSSL_OpenSSL-libexec Data-libexec Data/SQLite-libexec Zip-libexec PageCompiler-libexec PageCompiler/File2Page-libexec
+-tests    = Foundation-tests XML-tests JSON-tests Util-tests Net-tests Crypto-tests NetSSL_OpenSSL-tests Data-tests Data/SQLite-tests Zip-tests CppParser-tests
+-samples  = Foundation-samples XML-samples JSON-samples Util-samples Net-samples Crypto-samples NetSSL_OpenSSL-samples Data-samples Zip-samples PageCompiler-samples
+-cleans   = Foundation-clean XML-clean JSON-clean Util-clean Net-clean Crypto-clean NetSSL_OpenSSL-clean Data-clean Data/SQLite-clean Zip-clean PageCompiler-clean PageCompiler/File2Page-clean CppParser-clean
++ifndef POCO_EXTERNAL
++libexecs = Foundation-libexec XML-libexec JSON-libexec Util-libexec Net-libexec Crypto-libexec NetSSL_OpenSSL-libexec Data-libexec Data/SQLite-libexec Zip-libexec
++tests    = Foundation-tests XML-tests JSON-tests Util-tests Net-tests Crypto-tests NetSSL_OpenSSL-tests Data-tests Data/SQLite-tests Zip-tests
++samples  = Foundation-samples XML-samples JSON-samples Util-samples Net-samples Crypto-samples NetSSL_OpenSSL-samples Data-samples Zip-samples
++cleans   = Foundation-clean XML-clean JSON-clean Util-clean Net-clean Crypto-clean NetSSL_OpenSSL-clean Data-clean Data/SQLite-clean Zip-clean
++endif
++
++libexecs += PageCompiler-libexec PageCompiler/File2Page-libexec
++tests    += CppParser-tests
++samples  += PageCompiler-samples
++cleans   += PageCompiler-clean PageCompiler/File2Page-clean CppParser-clean
+ 
+ # WebTunnel, JS, Redis, Remoting and OSP
+ libexecs += \
+@@ -86,6 +96,7 @@ tests: $(filter-out $(foreach f,$(OMIT),$f%),$(tests))
+ samples: $(filter-out $(foreach f,$(OMIT),$f%),$(samples))
+ cleans: $(filter-out $(foreach f,$(OMIT),$f%),$(cleans))
+ 
++ifndef POCO_EXTERNAL
+ Foundation-libexec:
+ 	$(MAKE) -C $(POCO_BASE)/Foundation
+ 
+@@ -221,6 +232,47 @@ Zip-clean:
+ 	$(MAKE) -C $(POCO_BASE)/Zip clean
+ 	$(MAKE) -C $(POCO_BASE)/Zip/testsuite clean
+ 	$(MAKE) -C $(POCO_BASE)/Zip/samples clean
++else
++Foundation-libexec:
++Foundation-tests:
++Foundation-samples:
++Foundation-clean:
++XML-libexec:
++XML-tests:
++XML-samples:
++XML-clean:
++JSON-libexec:
++JSON-tests:
++JSON-samples:
++JSON-clean:
++Util-libexec:
++Util-tests:
++Util-samples:
++Util-clean:
++Net-libexec:
++Net-tests:
++Net-samples:
++Net-clean:
++Crypto-libexec:
++Crypto-tests:
++Crypto-samples:
++Crypto-clean:
++NetSSL_OpenSSL-libexec:
++NetSSL_OpenSSL-tests:
++NetSSL_OpenSSL-samples:
++NetSSL_OpenSSL-clean:
++Data-libexec:
++Data-tests:
++Data-samples:
++Data-clean:
++Data/SQLite-libexec:
++Data/SQLite-tests:
++Data/SQLite-clean:
++Zip-libexec:
++Zip-tests:
++Zip-samples:
++Zip-clean:
++endif
+ 
+ WebTunnel-libexec:  Foundation-libexec Net-libexec Util-libexec XML-libexec
+ 	$(MAKE) -C $(POCO_BASE)/WebTunnel
+diff --git a/platform/build/rules/global b/platform/build/rules/global
+index 2fce7017..344201eb 100644
+--- a/platform/build/rules/global
++++ b/platform/build/rules/global
+@@ -234,14 +234,14 @@ LIBPREFIX = lib
+ endif
+ 
+ ifeq ($(POCO_HOST_LIBPATH),$(POCO_BASE)/$(POCO_HOST_LIBDIR))
+-LD_LIBRARY_PATH = $(POCO_HOST_LIBPATH)
++XLD_LIBRARY_PATH = $(LD_LIBRARY_PATH):$(POCO_HOST_LIBPATH)
+ else
+-LD_LIBRARY_PATH = $(POCO_HOST_LIBPATH):$(POCO_BASE)/$(POCO_HOST_LIBDIR)
++XLD_LIBRARY_PATH = $(LD_LIBRARY_PATH):$(POCO_HOST_LIBPATH):$(POCO_BASE)/$(POCO_HOST_LIBDIR)
+ endif
+ ifeq ($(POCO_HOST_OSNAME),Darwin)
+-SET_LD_LIBRARY_PATH = DYLD_LIBRARY_PATH=$(LD_LIBRARY_PATH)
++SET_LD_LIBRARY_PATH = DYLD_LIBRARY_PATH=$(XLD_LIBRARY_PATH)
+ else
+-SET_LD_LIBRARY_PATH = LD_LIBRARY_PATH=$(LD_LIBRARY_PATH)
++SET_LD_LIBRARY_PATH = LD_LIBRARY_PATH=$(XLD_LIBRARY_PATH)
+ endif
+ 
+ #

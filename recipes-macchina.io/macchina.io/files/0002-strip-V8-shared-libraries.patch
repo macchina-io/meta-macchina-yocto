@@ -1,0 +1,36 @@
+From 9c28a0a0d6254771797fffc39b98e2e6bdef29fa Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?G=C3=BCnter=20Obiltschnig?= <guenter.obiltschnig@appinf.com>
+Date: Tue, 20 Nov 2018 09:28:55 +0100
+Subject: [PATCH] strip V8 shared libraries
+
+---
+ platform/JS/V8/Makefile | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/platform/JS/V8/Makefile b/platform/JS/V8/Makefile
+index 47d4ec1a..ea09e920 100644
+--- a/platform/JS/V8/Makefile
++++ b/platform/JS/V8/Makefile
+@@ -82,6 +82,12 @@ LINK += -Xlinker --hash-size=31 -Xlinker --reduce-memory-overhead
+ export LINK
+ endif
+ 
++ifeq ($(strip $(STRIP)),)
++V8STRIPCMD = touch -c
++else
++V8STRIPCMD = $(STRIP)
++endif
++
+ default: shared_release
+ 
+ v8deps: out/Makefile include/v8.h
+@@ -100,6 +106,9 @@ shared_release: v8deps
+ 	cp out/Release/$(v8targetlibdir)libv8$(SHAREDLIBLINKEXT) $(LIBPATH)
+ 	cp out/Release/$(v8targetlibdir)libv8_libbase$(SHAREDLIBLINKEXT) $(LIBPATH)
+ 	cp out/Release/$(v8targetlibdir)libv8_libplatform$(SHAREDLIBLINKEXT) $(LIBPATH)
++	$(V8STRIPCMD) $(LIBPATH)/libv8$(SHAREDLIBLINKEXT)
++	$(V8STRIPCMD) $(LIBPATH)/libv8_libbase$(SHAREDLIBLINKEXT)
++	$(V8STRIPCMD) $(LIBPATH)/libv8_libplatform$(SHAREDLIBLINKEXT)
+ 
+ all_shared: shared_debug shared_release
+ 
